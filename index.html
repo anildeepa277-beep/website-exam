@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bharathapuzha | GIS Portal</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Arial,sans-serif;background:#f5f7f4;color:#25382e}
+
+/* HEADER */
+header{
+background:#123d30;color:white;padding:18px 6%;
+display:flex;justify-content:space-between;align-items:center;
+flex-wrap:wrap;gap:15px
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{background:#d6e7cf;color:#17452f;width:45px;height:45px;
+border-radius:50%;display:grid;place-items:center;font-weight:bold}
+.brand h1{font-size:21px;letter-spacing:2px}
+.brand p{font-size:10px;letter-spacing:2px;margin-top:5px}
+nav{display:flex;gap:22px;flex-wrap:wrap}
+nav a{color:white;text-decoration:none;font-size:14px}
+nav a:hover{color:#b8d9a8}
+
+/* HERO */
+.hero{
+min-height:440px;display:flex;align-items:center;padding:65px 9%;
+color:white;
+background:linear-gradient(90deg,rgba(7,39,29,.94),rgba(7,39,29,.35)),
+url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e')
+center/cover
+}
+.hero-content{max-width:650px}
+.hero small{letter-spacing:3px;color:#c9e2bd}
+.hero h2{font-size:clamp(36px,5vw,58px);margin:20px 0;line-height:1.15}
+.hero p{line-height:1.8;font-size:16px}
+.btn{
+display:inline-block;margin-top:25px;padding:14px 25px;
+background:#c8dfb9;color:#163e2c;text-decoration:none;
+font-weight:bold;border-radius:4px
+}
+
+/* GENERAL */
+section{padding:65px 6%}
+.heading{text-align:center;margin-bottom:35px}
+.heading small{color:#628765;letter-spacing:3px;font-size:11px}
+.heading h2{font-size:30px;color:#174d39;margin:12px 0}
+.heading p{color:#718078;line-height:1.7}
+.about{text-align:center;max-width:1000px;margin:auto;line-height:1.9;color:#66746b}
+
+/* MAP */
+.map-section{background:#eaf0e9}
+.map-container{
+display:grid;grid-template-columns:260px 1fr;
+background:white;border-radius:10px;overflow:hidden;
+box-shadow:0 5px 25px #00000012
+}
+.sidebar{padding:23px;background:white}
+.sidebar h3{color:#174d39;margin-bottom:5px}
+.sidebar h4{margin:18px 0 12px;color:#43704f}
+.sidebar p{font-size:12px;color:#829087;margin-bottom:15px}
+.sidebar label{display:flex;align-items:center;gap:10px;
+font-size:13px;margin:14px 0;cursor:pointer}
+.sidebar input{accent-color:#246b4a;width:16px;height:16px}
+.sidebar hr{border:0;border-top:1px solid #e5ebe6;margin:16px 0}
+#map{height:600px;width:100%;z-index:1}
+button{cursor:pointer}
+.action{
+width:100%;padding:11px;border:0;border-radius:4px;
+background:#174d39;color:white;margin-top:12px
+}
+.action:hover{background:#286b4c}
+#status{font-size:11px;margin-top:15px;color:#77877c;line-height:1.5}
+
+/* SEARCH */
+.searchbox{display:flex;gap:5px;margin:15px 0}
+.searchbox input{width:100%;padding:10px;border:1px solid #dce4dc;border-radius:4px}
+.searchbox button{padding:10px;background:#174d39;color:white;border:0;border-radius:4px}
+
+/* LAYER CARDS */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{
+background:white;padding:27px;border:1px solid #e5ebe5;
+border-radius:8px;transition:.3s
+}
+.card:hover{transform:translateY(-5px);box-shadow:0 8px 20px #00000010}
+.card .number{font-size:12px;color:#71916e;letter-spacing:2px}
+.card h3{margin:13px 0;color:#20563c;font-size:18px}
+.card p{font-size:14px;color:#77847b;line-height:1.7}
+
+/* LEGEND */
+.legend{background:white;border-radius:8px;padding:25px;margin-top:25px}
+.legend h3{color:#174d39;margin-bottom:18px}
+.legend-items{display:flex;flex-wrap:wrap;gap:20px}
+.legend-item{display:flex;align-items:center;gap:9px;font-size:13px}
+.swatch{width:20px;height:15px;border-radius:3px}
+
+/* FOOTER */
+footer{background:#123d30;color:white;text-align:center;padding:35px 15px}
+footer p{font-size:12px;color:#c5d7ca;line-height:1.8;margin-top:8px}
+
+@media(max-width:850px){
+.map-container{grid-template-columns:1fr}
+#map{height:480px}
+.cards{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:550px){
+.cards{grid-template-columns:1fr}
+header{justify-content:center}
+nav{justify-content:center}
+.hero{padding:50px 7%}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="brand">
+<div class="logo">BP</div>
+<div>
+<h1>BHARATHAPUZHA</h1>
+<p>RIVER BASIN GIS PORTAL</p>
+</div>
+</div>
+<nav>
+<a href="#home">Home</a>
+<a href="#about">About</a>
+<a href="#gis">GIS Map</a>
+<a href="#themes">Themes</a>
+</nav>
+</header>
+
+<div class="hero" id="home">
+<div class="hero-content">
+<small>GEOGRAPHICAL INFORMATION SYSTEM</small>
+<h2>Discover the<br>Bharathapuzha River Basin</h2>
+<p>
+Explore the geographical landscape, geomorphology,
+geology, transportation network, check dams and
+water resources through an interactive GIS platform.
+</p>
+<a href="#gis" class="btn">Explore GIS Map →</a>
+</div>
+</div>
+
+<section id="about">
+<div class="heading">
+<small>ABOUT THE PROJECT</small>
+<h2>Bharathapuzha River Basin</h2>
+</div>
+<p class="about">
+Bharathapuzha, popularly known as Nila, is one of
+the major river systems of Kerala. This geographical
+information portal presents spatial information about
+the river basin through thematic mapping and resource
+assessment. The platform integrates physical geography,
+geological characteristics, infrastructure and water
+resources into an interactive mapping environment.
+</p>
+</section>
+
+<section class="map-section" id="gis">
+<div class="heading">
+<small>SPATIAL INFORMATION SYSTEM</small>
+<h2>Interactive GIS Map</h2>
+<p>Select different layers to explore the geographical
+characteristics of Bharathapuzha.</p>
+</div>
+
+<div class="map-container">
+
+<div class="sidebar">
+<h3>Map Explorer</h3>
+<p>Control geographical layers</p>
+
+<div class="searchbox">
+<input id="searchInput" type="text" placeholder="Search coordinates">
+<button onclick="searchLocation()">Go</button>
+</div>
+
+<h4>Base Maps</h4>
+<label><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
+<label><input type="radio" name="base" value="sat"> Satellite View</label>
+
+<hr>
+<h4>Boundary</h4>
+<label><input type="checkbox" id="boundary" checked> Basin Boundary</label>
+
+<hr>
+<h4>Physical Geography</h4>
+<label><input type="checkbox" id="geomorphology"> Geomorphology</label>
+<label><input type="checkbox" id="geology"> Geology</label>
+<label><input type="checkbox" id="waterbodies"> Water Bodies</label>
+
+<hr>
+<h4>Infrastructure</h4>
+<label><input type="checkbox" id="roads"> Road Network</label>
+<label><input type="checkbox" id="checkdams"> Check Dams</label>
+
+<hr>
+<h4>Integrated Resources</h4>
+<label><input type="checkbox" id="resource"> Resource Map</label>
+
+<hr>
+<button class="action" onclick="resetMap()">Reset Map View</button>
+<button class="action" onclick="map.zoomIn()">Zoom In +</button>
+<button class="action" onclick="map.zoomOut()">Zoom Out −</button>
+
+<div id="status">Map ready. Add your GeoJSON files to load spatial data.</div>
+</div>
+
+<div id="map"></div>
+</div>
+
+<div class="legend">
+<h3>Map Legend</h3>
+<div class="legend-items">
+<div class="legend-item"><span class="swatch" style="background:#174d39"></span> Basin Boundary</div>
+<div class="legend-item"><span class="swatch" style="background:#c6a66a"></span> Geomorphology</div>
+<div class="legend-item"><span class="swatch" style="background:#a17b72"></span> Geology</div>
+<div class="legend-item"><span class="swatch" style="background:#55b9e9"></span> Water Bodies</div>
+<div class="legend-item"><span class="swatch" style="background:#e47d30"></span> Roads</div>
+<div class="legend-item"><span class="swatch" style="background:#1457a0"></span> Check Dams</div>
+</div>
+</div>
+</section>
+
+<section id="themes">
+<div class="heading">
+<small>GEOGRAPHICAL INFORMATION</small>
+<h2>Thematic Resources</h2>
+<p>Explore the major spatial themes of the river basin.</p>
+</div>
+
+<div class="cards">
+
+<div class="card">
+<span class="number">01 / PHYSICAL GEOGRAPHY</span>
+<h3>Geomorphology</h3>
+<p>Landforms, terrain characteristics,
+geomorphological units and landscape evolution.</p>
+</div>
+
+<div class="card">
+<span class="number">02 / EARTH SCIENCE</span>
+<h3>Geology</h3>
+<p>Geological formations, rock types,
+lithology and structural characteristics.</p>
+</div>
+
+<div class="card">
+<span class="number">03 / TRANSPORT</span>
+<h3>Road Network</h3>
+<p>Spatial distribution of major roads,
+minor roads and connectivity.</p>
+</div>
+
+<div class="card">
+<span class="number">04 / WATER INFRASTRUCTURE</span>
+<h3>Check Dams</h3>
+<p>Locations and spatial distribution of
+check dams and water conservation structures.</p>
+</div>
+
+<div class="card">
+<span class="number">05 / WATER RESOURCES</span>
+<h3>Water Bodies</h3>
+<p>River channels, ponds, reservoirs
+and other surface-water resources.</p>
+</div>
+
+<div class="card">
+<span class="number">06 / INTEGRATED MAPPING</span>
+<h3>Resource Map</h3>
+<p>Integrated spatial representation of
+natural and human-made resources.</p>
+</div>
+
+</div>
+</section>
+
+<footer>
+<h3>BHARATHAPUZHA GIS PORTAL</h3>
+<p>Geographical Information System | River Basin Resource Mapping</p>
+<p>Spatial Data | Thematic Mapping | Geographical Analysis</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+// MAP INITIALIZATION
+const map = L.map('map').setView([10.8,76.2],9);
+
+// BASE MAPS
+const osm = L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{attribution:'© OpenStreetMap contributors'}
+).addTo(map);
+
+const satellite = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{attribution:'Tiles © Esri'}
+);
+
+// LAYER STYLES
+const styles = {
+boundary:{color:'#174d39',weight:3,fillOpacity:0.03},
+geomorphology:{color:'#b47a32',fillColor:'#c6a66a',fillOpacity:0.55,weight:1},
+geology:{color:'#80534b',fillColor:'#a17b72',fillOpacity:0.55,weight:1},
+waterbodies:{color:'#167ac0',fillColor:'#55b9e9',fillOpacity:0.65,weight:1},
+roads:{color:'#e47d30',weight:2.5},
+resource:{color:'#33835c',fillColor:'#b1d6a8',fillOpacity:0.5,weight:2}
+};
+
+// POPUP INFORMATION
+function addPopup(feature,layer){
+let p=feature.properties||{};
+let html='<b>'+(p.name||p.Name||'Geographical Feature')+'</b><hr>';
+Object.keys(p).forEach(key=>{
+html+='<b>'+key+':</b> '+p[key]+'<br>';
+});
+layer.bindPopup(html);
+}
+
+// GEOJSON FILES
+const filePaths={
+boundary:'data/basin_boundary.geojson',
+geomorphology:'data/geomorphology.geojson',
+geology:'data/geology.geojson',
+roads:'data/roads.geojson',
+checkdams:'data/checkdams.geojson',
+waterbodies:'data/waterbodies.geojson',
+resource:'data/resource_map.geojson'
+};
+
+// LAYER GROUPS
+const layers={};
+
+layers.boundary=L.geoJSON(null,{style:styles.boundary,onEachFeature:addPopup});
+
+layers.geomorphology=L.geoJSON(null,{
+style:f=>({...styles.geomorphology,
+fillColor:f.properties?.color||'#c6a66a'}),
+onEachFeature:addPopup
+});
+
+layers.geology=L.geoJSON(null,{
+style:f=>({...styles.geology,
+fillColor:f.properties?.color||'#a17b72'}),
+onEachFeature:addPopup
+});
+
+layers.roads=L.geoJSON(null,{
+style:styles.roads,onEachFeature:addPopup
+});
+
+layers.waterbodies=L.geoJSON(null,{
+style:styles.waterbodies,onEachFeature:addPopup
+});
+
+layers.checkdams=L.geoJSON(null,{
+pointToLayer:(f,ll)=>L.circleMarker(ll,{
+radius:7,color:'white',weight:2,
+fillColor:'#1457a0',fillOpacity:1
+}),
+onEachFeature:addPopup
+});
+
+layers.resource=L.geoJSON(null,{
+style:f=>({...styles.resource,
+fillColor:f.properties?.color||'#b1d6a8'}),
+pointToLayer:(f,ll)=>L.circleMarker(ll,{
+radius:6,color:'#205b40',fillColor:'#b1d6a8',
+fillOpacity:0.9
+}),
+onEachFeature:addPopup
+});
+
+// LOAD GEOJSON DATA
+async function loadData(){
+let loaded=0;
+
+for(const name of Object.keys(filePaths)){
+try{
+const response=await fetch(filePaths[name]);
+if(!response.ok) throw new Error('Missing file');
+
+const data=await response.json();
+layers[name].addData(data);
+loaded++;
+
+if(name==='boundary'){
+layers.boundary.addTo(map);
+if(layers.boundary.getBounds().isValid()){
+map.fitBounds(layers.boundary.getBounds());
+}
+}
+
+}catch(error){
+console.warn(name+' data not available');
+}
+}
+
+document.getElementById('status').innerText=
+loaded+' of 7 spatial datasets loaded.';
+
+}
+
+loadData();
+
+// CHECKBOX CONTROLS
+const controls={
+boundary:'boundary',
+geomorphology:'geomorphology',
+geology:'geology',
+roads:'roads',
+checkdams:'checkdams',
+waterbodies:'waterbodies',
+resource:'resource'
+};
+
+Object.keys(controls).forEach(id=>{
+document.getElementById(id).addEventListener('change',function(){
+const layer=layers[controls[id]];
+if(this.checked){
+layer.addTo(map);
+}else{
+map.removeLayer(layer);
+}
+});
+});
+
+// BASE MAP SWITCH
+document.querySelectorAll('input[name="base"]').forEach(input=>{
+input.addEventListener('change',function(){
+if(this.value==='osm'){
+map.removeLayer(satellite);
+osm.addTo(map);
+}else{
+map.removeLayer(osm);
+satellite.addTo(map);
+}
+});
+});
+
+// SEARCH BY LATITUDE AND LONGITUDE
+function searchLocation(){
+const value=document.getElementById('searchInput').value.trim();
+const coords=value.split(',').map(Number);
+
+if(coords.length===2&&coords.every(Number.isFinite)&&
+Math.abs(coords[0])<=90&&Math.abs(coords[1])<=180){
+map.setView([coords[0],coords[1]],14);
+L.marker([coords[0],coords[1]]).addTo(map)
+.bindPopup('Searched location').openPopup();
+}else{
+alert('Enter coordinates as latitude, longitude. Example: 10.8, 76.2');
+}
+}
+
+// RESET MAP
+function resetMap(){
+if(layers.boundary.getBounds().isValid()){
+map.fitBounds(layers.boundary.getBounds());
+}else{
+map.setView([10.8,76.2],9);
+}
+}
+
+// SCALE
+L.control.scale({imperial:false}).addTo(map);
+
+</script>
+</body>
+</html>
